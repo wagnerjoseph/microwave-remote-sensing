@@ -141,8 +141,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#import-packages" id="toc-import-packages" class="nav-link active" data-scroll-target="#import-packages">Import packages</a></li>
-  <li><a href="#load-sentinel-1-data" id="toc-load-sentinel-1-data" class="nav-link" data-scroll-target="#load-sentinel-1-data">Load Sentinel 1 data</a></li>
+  <li><a href="#load-sentinel-1-data" id="toc-load-sentinel-1-data" class="nav-link active" data-scroll-target="#load-sentinel-1-data">Load Sentinel 1 data</a></li>
   <li><a href="#load-corine-landcover-data" id="toc-load-corine-landcover-data" class="nav-link" data-scroll-target="#load-corine-landcover-data">Load Corine Landcover data</a>
   <ul class="collapse">
   <li><a href="#loading-data" id="toc-loading-data" class="nav-link" data-scroll-target="#loading-data">Loading data</a></li>
@@ -179,27 +178,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>In this notebook we want to look at how different surfaces like water, forest grasland and cities give us different backscatter.</p>
 <p>We are going to load backscatering data from Sentinel 1 and we will use the Corine Landcoverdata to get a classification of different surfaces.</p>
-<p>TODO: include time series - how much data changes over time or is affected by certain weather</p>
-<section id="import-packages" class="level2">
-<h2 class="anchored" data-anchor-id="import-packages">Import packages</h2>
-<div id="cell-5" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> xarray <span class="im">as</span> xr</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rasterio</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> glob <span class="im">import</span> glob</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pprint <span class="im">import</span> pprint</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.patches <span class="im">as</span> mpatches</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.colors <span class="im">import</span> ListedColormap, BoundaryNorm</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyproj <span class="im">import</span> Transformer</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> holoviews <span class="im">as</span> hv</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> holoviews.streams <span class="im">import</span> RangeXY</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-3" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Imports</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> xarray <span class="im">as</span> xr</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> rasterio</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> glob <span class="im">import</span> glob</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pprint <span class="im">import</span> pprint</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.patches <span class="im">as</span> mpatches</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.colors <span class="im">import</span> ListedColormap, BoundaryNorm</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pyproj <span class="im">import</span> Transformer</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> holoviews <span class="im">as</span> hv</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> holoviews.streams <span class="im">import</span> RangeXY</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
 <section id="load-sentinel-1-data" class="level2">
 <h2 class="anchored" data-anchor-id="load-sentinel-1-data">Load Sentinel 1 data</h2>
 <p>Load Metadata to get some information on the data. Using ‘.tags()’ we can extract a lot of useful information like the scale_factor.</p>
@@ -209,7 +205,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We have 8 timestemps. For performance reasons we will fous on only on one time becasue the data does not change to much over time.</p>
 <p>We downsample already in the preprocessing because we do not need all the resolution because we are working with the corine data map and the resolution there is 100 by 100 meters. When we downsample x and y coordinates by 10 we get pixles of size 100 by 100meters which fits perfectly to the</p>
 <p>(insert image of downscaled, normal and corine landcover)</p>
-<div id="cell-9" class="cell">
+<div id="cell-7" class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># SAT-1 data is inside the saocom_gamma folder but this could change</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data_path <span class="op">=</span> Path(</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'~/shared/datasets/rs/datapool/mrs/saocom_gamma/S1gammaNeusiedler'</span></span>
@@ -221,36 +217,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _preprocess(x):</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">file</span> <span class="op">=</span> x.encoding[<span class="st">'source'</span>]</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>os<span class="sc">.</span>path<span class="sc">.</span>basename(<span class="bu">file</span>)<span class="sc">}</span><span class="ss">: "</span>)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(json.dumps(rasterio.<span class="bu">open</span>(<span class="bu">file</span>).tags(), indent<span class="op">=</span><span class="dv">4</span>))</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    scale_factor <span class="op">=</span> pd.to_numeric(</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        rasterio.<span class="bu">open</span>(x.encoding[<span class="st">"source"</span>]).tags().get(<span class="st">'scale_factor'</span>)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x <span class="op">/</span> scale_factor</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> rasterio.<span class="bu">open</span>(<span class="bu">file</span>) <span class="im">as</span> src:</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>os<span class="sc">.</span>path<span class="sc">.</span>basename(<span class="bu">file</span>)<span class="sc">}</span><span class="ss">: "</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(json.dumps(src.tags(), indent<span class="op">=</span><span class="dv">4</span>))</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        meta <span class="op">=</span> src.meta.copy()</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        meta[<span class="st">'crs'</span>] <span class="op">=</span> <span class="bu">str</span>(meta[<span class="st">'crs'</span>])</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(json.dumps(meta, indent<span class="op">=</span><span class="dv">4</span>))</span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    time_value <span class="op">=</span> pd.to_datetime(</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        rasterio.<span class="bu">open</span>(x.encoding[<span class="st">"source"</span>]).tags().get(<span class="st">'time_begin'</span>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x.assign_coords(time<span class="op">=</span>time_value).expand_dims(<span class="st">"time"</span>)</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x.rename(</span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"band_data"</span>: <span class="st">"sig0"</span>}</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    ).squeeze(<span class="st">"band"</span>).drop_vars(<span class="st">"band"</span>)</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        scale_factor <span class="op">=</span> pd.to_numeric(src.tags().get(<span class="st">'scale_factor'</span>))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x <span class="op">/</span> scale_factor</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        time_value <span class="op">=</span> pd.to_datetime(src.tags().get(<span class="st">'time_begin'</span>))</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x.assign_coords(time<span class="op">=</span>time_value).expand_dims(<span class="st">"time"</span>)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x.rename(</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        {<span class="st">"band_data"</span>: <span class="st">"sig0"</span>}</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    ).squeeze(<span class="st">"band"</span>).drop_vars(<span class="st">"band"</span>)</span>
 <span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>sig0_ds_large <span class="op">=</span> xr.open_mfdataset(</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">'~/shared/datasets/rs/datapool/mrs/saocom_gamma/S1gammaNeusiedler/*.tif'</span>,</span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    engine<span class="op">=</span><span class="st">"rasterio"</span>,</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    combine<span class="op">=</span><span class="st">'nested'</span>,</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    concat_dim<span class="op">=</span><span class="st">"time"</span>,</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    preprocess<span class="op">=</span>_preprocess</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>sig0_ds_large <span class="op">=</span> sig0_ds_large[<span class="bu">list</span>(sig0_ds_large.data_vars.keys())[<span class="dv">0</span>]]</span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>sig0_ds_large</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>sig0_ds_large <span class="op">=</span> xr.open_mfdataset(</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">'~/shared/datasets/rs/datapool/mrs/saocom_gamma/S1gammaNeusiedler/*.tif'</span>,</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    engine<span class="op">=</span><span class="st">"rasterio"</span>,</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    combine<span class="op">=</span><span class="st">'nested'</span>,</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    concat_dim<span class="op">=</span><span class="st">"time"</span>,</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    preprocess<span class="op">=</span>_preprocess</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>sig0_ds_large <span class="op">=</span> sig0_ds_large[<span class="bu">list</span>(sig0_ds_large.data_vars.keys())[<span class="dv">0</span>]]</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>sig0_ds_large</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-10" class="cell">
+<p>We print the metadata to get some feeling of which data we are actually using. The data we are using</p>
+<div id="cell-9" class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>bounding_box <span class="op">=</span> {</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'x_min'</span>: <span class="fl">5_280_000.0</span>,</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'x_max'</span>: <span class="fl">5_295_000.0</span>,</span>
@@ -259,7 +257,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We corase 10 by 10 pixles to one large one to make the plotting faster. Here we use the median for the coarsing because the mean would be mathematicaly not correct as we learned in <a href="../unit_01/02_unit-conversions.html">Notebook 02</a>.</p>
-<div id="cell-12" class="cell">
+<div id="cell-11" class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>img <span class="op">=</span> sig0_ds_large.isel(time<span class="op">=</span><span class="dv">0</span>) .coarsen(x<span class="op">=</span><span class="dv">10</span>, y<span class="op">=</span><span class="dv">10</span>, boundary<span class="op">=</span><span class="st">'pad'</span>).median()</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">10</span>))</span>
@@ -279,7 +277,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-13" class="cell">
+<div id="cell-12" class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sig0_ds <span class="op">=</span> sig0_ds_large.sel(</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span><span class="bu">slice</span>(bounding_box[<span class="st">'x_min'</span>], bounding_box[<span class="st">'x_max'</span>]),</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span><span class="bu">slice</span>(bounding_box[<span class="st">'y_max'</span>], bounding_box[<span class="st">'y_min'</span>])</span>
@@ -287,7 +285,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>sig0_ds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To get an idea of the region we are looking at we want to display it. Using ‘rubust=True’ will use the 2nd and 98th percentiles of the data to compute the color limits.</p>
-<div id="cell-15" class="cell">
+<div id="cell-14" class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sig0_ds.isel(time<span class="op">=</span><span class="dv">0</span>).plot(robust<span class="op">=</span><span class="va">True</span>).axes.set_aspect(<span class="st">'equal'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -297,7 +295,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We want to work with the Equi7 grid because it preserves geometric accuracy and minimises data oversampling over surfaces. So we need to convert the Corine Land Cover map to this coordinate system.</p>
 <section id="loading-data" class="level3">
 <h3 class="anchored" data-anchor-id="loading-data">Loading data</h3>
-<div id="cell-18" class="cell">
+<div id="cell-17" class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>corine_path <span class="op">=</span> Path(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'~/shared/datasets/rs/datapool/mrs/Corine_Land_Cover_2018.tif'</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    ).expanduser()</span>
@@ -317,7 +315,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="select-area-of-interest" class="level3">
 <h3 class="anchored" data-anchor-id="select-area-of-interest">Select area of interest</h3>
-<div id="cell-20" class="cell">
+<div id="cell-19" class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>transformer <span class="op">=</span> Transformer.from_crs(<span class="st">"EPSG:27704"</span>, <span class="st">"EPSG:3035"</span>, always_xy<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>bbox_27704 <span class="op">=</span> sig0_ds_large.rio.transform_bounds(sig0_ds_large.rio.crs)</span>
@@ -332,19 +330,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="alignment-of-the-datasets-raster-pixles" class="level3">
 <h3 class="anchored" data-anchor-id="alignment-of-the-datasets-raster-pixles">Alignment of the datasets (raster + pixles)</h3>
-<div id="cell-22" class="cell">
+<div id="cell-21" class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> print_details(ds, ds_name):</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>ds_name<span class="sc">}</span><span class="ss">: "</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"CRS: </span><span class="sc">{</span>ds<span class="sc">.</span>rio<span class="sc">.</span>crs<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Bounds: </span><span class="sc">{</span>ds<span class="sc">.</span>rio<span class="sc">.</span>bounds()<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Pixel size: </span><span class="sc">{</span>ds<span class="sc">.</span>rio<span class="sc">.</span>resolution()<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-23" class="cell">
+<div id="cell-22" class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>print_details(corine_ds, <span class="st">"corine_ds"</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>print_details(sig0_ds, <span class="st">"sig0_ds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Reprojecting does a whole lot for us</p>
-<div id="cell-25" class="cell">
+<div id="cell-24" class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>corine_ds <span class="op">=</span> corine_ds.rio.reproject_match(sig0_ds)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>print_details(corine_ds, <span class="st">"corine_ds"</span>)</span>
@@ -354,7 +352,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="colormapping-and-encoding" class="level3">
 <h3 class="anchored" data-anchor-id="colormapping-and-encoding">Colormapping and Encoding</h3>
 <p>The color mapping is stored in a json file under assets. The encoding can be found here: https://collections.sentinel-hub.com/corine-land-cover/readme.html</p>
-<div id="cell-27" class="cell">
+<div id="cell-26" class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(<span class="st">'../assets/06_color_mapping.json'</span>, <span class="st">'r'</span>) <span class="im">as</span> f:</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    color_mapping_data <span class="op">=</span> json.load(f)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -368,7 +366,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>cmap <span class="op">=</span> ListedColormap(colors)</span>
 <span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>norm <span class="op">=</span> BoundaryNorm(categories <span class="op">+</span> [<span class="bu">max</span>(categories) <span class="op">+</span> <span class="dv">1</span>], <span class="bu">len</span>(categories))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-28" class="cell">
+<div id="cell-27" class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>max_length <span class="op">=</span> <span class="dv">50</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>indentation <span class="op">=</span> <span class="st">' '</span> <span class="op">*</span> <span class="dv">7</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -407,28 +405,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we can combine the datasets to one xarray dataset.</p>
-<div id="cell-30" class="cell">
+<div id="cell-29" class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fs <span class="op">=</span> xr.merge([sig0_ds, corine_ds]) .drop_vars(<span class="st">"band"</span>) .compute()</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="creating-a-histogram-for-a-specific-landcover-backscatter" class="level3">
 <h3 class="anchored" data-anchor-id="creating-a-histogram-for-a-specific-landcover-backscatter">Creating a Histogram for a specific landcover backscatter</h3>
-<div id="cell-32" class="cell">
+<div id="cell-31" class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>waterbodies_mask <span class="op">=</span> (fs.land_cover <span class="op">==</span> <span class="dv">41</span>)  <span class="co"># 41 = encoded value for water bodies</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>waterbodies_mask.plot().axes.set_aspect(<span class="st">'equal'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-33" class="cell">
+<div id="cell-32" class="cell">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>waterbodies_sig0 <span class="op">=</span> fs.sig0.isel(time<span class="op">=</span><span class="dv">0</span>).where(waterbodies_mask)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>waterbodies_sig0.plot(robust<span class="op">=</span><span class="va">True</span>).axes.set_aspect(<span class="st">'equal'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="cell-34" class="cell">
+<div id="cell-33" class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>waterbodies_sig0.plot.hist(bins<span class="op">=</span><span class="dv">50</span>, edgecolor<span class="op">=</span><span class="st">'black'</span>)<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="dashboard-backscatter-of-different-landcover-over-time" class="level3">
 <h3 class="anchored" data-anchor-id="dashboard-backscatter-of-different-landcover-over-time">Dashboard backscatter of different landcover over time</h3>
-<div id="cell-36" class="cell">
+<div id="cell-35" class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>hv.extension(<span class="st">'bokeh'</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------------</span></span>
@@ -486,7 +484,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb18-55"><a href="#cb18-55" aria-hidden="true" tabindex="-1"></a>    bins<span class="op">=</span>bin_edges</span>
 <span id="cb18-56"><a href="#cb18-56" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb18-57"><a href="#cb18-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a>dmap <span class="op">=</span> dmap.opts(framewise<span class="op">=</span><span class="va">True</span>, show_title<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a>dmap <span class="op">=</span> dmap.opts(framewise<span class="op">=</span><span class="va">True</span>, show_title<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb18-59"><a href="#cb18-59" aria-hidden="true" tabindex="-1"></a>dmap</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
